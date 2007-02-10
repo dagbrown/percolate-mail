@@ -7,7 +7,7 @@ require "test/unit"
 
 $: << File.join(File.dirname(__FILE__),"..","lib")
 
-require "smtpd"
+require "percolate-mail"
 
 class SMTPConnection
     def initialize
@@ -19,7 +19,7 @@ class SMTPConnection
         begin
             str = @socket.recv_nonblock(1000)
             resp << str
-        rescue Errno::EGAIN
+        rescue Errno::EAGAIN
             if resp.chomp "\r\n" == resp
                 raise Error, "whoops, we're not doing EOLs properly"
             else
@@ -33,19 +33,25 @@ class SMTPConnection
     end
 end
 
-class TestSMTPDResponder < Test::Unit::TestCase
-    TestHostName="testhost"
+class TestPercolateResponder < Test::Unit::TestCase
+    TestHostName="localhost"
 
     def setup
-        @pid = fork do 
-            @listener = SMTPD::Listener.new :hostname => TestHostName
-            @listener.go
-        end
+				@pid = fork do 
+						listener = Percolate::Listener.new :hostname => TestHostName
+						listener.go
+				end
 
-        sleep 0.1 # to give the listener time to fire up
-        @responder = SMTPConnection.new
-        # @responder = SMTPD::Responder.new TestHostName, :debug => false
+				sleep 0.1 # to give the listener time to fire up
+
+        @responder ||= SMTPConnection.new
+        # @responder = Percolate::Responder.new TestHostName, :debug => false
     end
+
+		def teardown
+			Process.kill 'KILL', @pid
+			Process.wait(@pid)
+		end
 
     def test_initialize
         assert_equal "220 Ok", @responder.response
@@ -57,13 +63,15 @@ class TestSMTPDResponder < Test::Unit::TestCase
         assert_equal "250 #{TestHostName}", @responder.response
         assert_equal "testhelohost", 
             @responder.instance_variable_get("@remotehostname")
+				quit
     end
 
     def test_should_never_get_here
         test_helo
-        assert_raises SMTPD::ResponderError do
+        assert_raises Percolate::ResponderError do
             @responder.__send__ "connect"
         end
+				quit
     end
 
     def test_ehlo
@@ -72,12 +80,14 @@ class TestSMTPDResponder < Test::Unit::TestCase
         assert_equal "250 #{TestHostName}", @responder.response
         assert_equal "testhelohost", 
             @responder.instance_variable_get("@remotehostname")
+				quit
     end
 
     def test_randomcrap
         test_initialize
         @responder.command "huaglhuaglhuaglhuagl"
         assert_equal "500 command not recognized", @responder.response
+				quit
     end
 
     def test_mail_from_valid
@@ -85,12 +95,14 @@ class TestSMTPDResponder < Test::Unit::TestCase
         @responder.command "mail from:<validaddress>"
         assert_equal "250 ok", @responder.response
         assert_not_nil @responder.instance_variable_get("@mail_object")
+				quit
     end
 
     def test_mail_from_nested
         test_mail_from_valid
         @responder.command "mail from:<anotheraddress>"
         assert_equal "503 Can't say MAIL right now", @responder.response
+				quit
     end
 
     def test_mail_from_invalid
@@ -98,6 +110,7 @@ class TestSMTPDResponder < Test::Unit::TestCase
         @responder.command "mail from: invalidsyntax"
         assert_equal "501 bad MAIL FROM: parameter", @responder.response
         assert_nil @responder.instance_variable_get("@mail_object")
+				quit
     end
 
     def test_good_after_bad
@@ -105,6 +118,7 @@ class TestSMTPDResponder < Test::Unit::TestCase
         @responder.command "mail from:<validaddress>"
         assert_equal "250 ok", @responder.response
         assert_not_nil @responder.instance_variable_get("@mail_object")
+				quit
     end
 
     def test_rset_after_mail_from
@@ -118,6 +132,7 @@ class TestSMTPDResponder < Test::Unit::TestCase
             @responder.instance_variable_get("@remotehostname")
         @responder.command "mail from:<anotheraddress>"
         assert_equal "250 ok", @responder.response
+				quit
     end
 
     def test_rcpt_to_valid
@@ -127,6 +142,7 @@ class TestSMTPDResponder < Test::Unit::TestCase
         assert_equal [ "validrcptaddress" ], 
             @responder.instance_variable_get("@mail_object") .
                 envelope_to
+				quit
     end
 
     def test_crappy_transaction_bad_from_good_to
@@ -135,6 +151,7 @@ class TestSMTPDResponder < Test::Unit::TestCase
         assert_equal "503 need MAIL FROM: first", 
             @responder.response
         assert_nil @responder.instance_variable_get("@mail_object") 
+				quit
     end
 
     def test_rcpt_to_multiple
@@ -144,6 +161,7 @@ class TestSMTPDResponder < Test::Unit::TestCase
         assert_equal [ "validrcptaddress", "anothervalidrcptaddress" ], 
             @responder.instance_variable_get("@mail_object") .
                 envelope_to
+				quit
     end
 
     def test_rcpt_to_invalid
@@ -152,12 +170,14 @@ class TestSMTPDResponder < Test::Unit::TestCase
         assert_equal "501 bad RCPT TO: parameter", @responder.response
         assert_nil @responder.instance_variable_get("@mail_object") .
                 envelope_to
+				quit
     end
 
     def test_rcpt_to_at_wrong_time
         test_helo
         @responder.command "rcpt to:<validrcptaddress>"
         assert_equal "503 need MAIL FROM: first", @responder.response
+				quit
     end
 
     def test_data
@@ -171,6 +191,7 @@ class TestSMTPDResponder < Test::Unit::TestCase
         assert_equal nil, @responder.response
         @responder.command "."
         assert_equal "250 ok", @responder.response
+				quit
     end
 
     def test_data_at_wrong_time
@@ -178,10 +199,11 @@ class TestSMTPDResponder < Test::Unit::TestCase
         @responder.command "data"
         assert_equal "503 Specify sender and recipient first",
             @responder.response
+				quit
     end
 
     def quit
-        assert_raises SMTPD::TransactionFinishedException do
+        assert_raises Percolate::TransactionFinishedException do
             @responder.command "quit"
         end
         assert_equal "221 Pleasure doing business with you", 
@@ -222,6 +244,7 @@ class TestSMTPDResponder < Test::Unit::TestCase
         assert_equal nil, @responder.response
         @responder.command "."
         assert_equal "250 ok", @responder.response
+				quit
     end
 
     def test_long_complete_transaction
