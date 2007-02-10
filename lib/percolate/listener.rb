@@ -40,6 +40,7 @@ module Percolate
             @ipaddress     = opts[:ipaddr] if opts[:ipaddr]
             @port          = opts[:port] if opts[:port]
             @hostname      = opts[:hostname] if opts[:hostname]
+            @responder     = opts[:responder] if opts[:responder]
 
             @socket = TCPServer.new @ipaddress, @port
         end
