@@ -51,6 +51,9 @@ module Percolate
         # Once the listener is running, let it start handling mail by
         # invoking the poorly-named "go" method.
         def go
+            trap 'CLD' do reap_children end
+            trap 'INT' do shutdown end
+            
             @pids = []
             while mailsocket=@socket.accept
                 pid = fork do # I can't imagine the contortions required
@@ -89,7 +92,6 @@ module Percolate
 
                 mailsocket.close
                 @pids << pid
-                reap_children
             end
         end
 
@@ -98,13 +100,19 @@ module Percolate
         # Prevent a BRAAAAAAINS situation
         def reap_children
             begin
-                while reaped=Process.waitpid(0, 1)
+                while reaped=Process.waitpid
                     @pids -= [ reaped ]
                 end
             rescue Errno::ECHILD
                 nil
             end
         end
+
+        def shutdown
+            @socket.close
+            exit
+        end
+
 
         def debug debug_string
             @debugging_stream ||= []
