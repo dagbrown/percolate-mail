@@ -37,9 +37,9 @@ module Percolate
             @responder = Responder
 
             @verbose_debug = opts[:debug]
-            @ipaddress     = opts[:ipaddr]
-            @port          = opts[:port]
-            @hostname      = opts[:hostname]
+            @ipaddress     = opts[:ipaddr] if opts[:ipaddr]
+            @port          = opts[:port] if opts[:port]
+            @hostname      = opts[:hostname] if opts[:hostname]
 
             @socket = TCPServer.new @ipaddress, @port
         end
