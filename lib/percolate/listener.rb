@@ -97,7 +97,7 @@ module Percolate
         # Prevent a BRAAAAAAINS situation
         def reap_children
             begin
-                while reaped=Process.waitpid 0, 1
+                while reaped=Process.waitpid(0, 1)
                     @pids -= [ reaped ]
                 end
             rescue Errno::ECHILD
