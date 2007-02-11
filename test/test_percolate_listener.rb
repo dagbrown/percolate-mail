@@ -5,7 +5,7 @@
 # --Dave
 require "test/unit"
 
-$: << File.join(File.dirname(__FILE__),"..","lib")
+$:.unshift File.join(File.dirname(__FILE__),"..","lib")
 
 require "percolate-mail"
 

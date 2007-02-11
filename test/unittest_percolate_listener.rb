@@ -1,7 +1,7 @@
 
 require "test/unit"
 
-$: << File.join(File.dirname(__FILE__),"..","lib")
+$:.unshift File.join(File.dirname(__FILE__),"..","lib")
 require "percolate-mail"
 
 class Responder
@@ -45,6 +45,7 @@ class TestPercolateListener < Test::Unit::TestCase
     def test_startup_and_shutdown
         listener = Percolate::Listener.new :hostname => TestHostName,
             :responder => ::Responder, :port => 10025
+
         pid = fork do
             listener.go
         end
