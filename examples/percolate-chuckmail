@@ -1,0 +1,36 @@
+#!/usr/bin/ruby
+
+require 'optparse'
+require 'percolate-mail'
+
+opts = OptionParser.new do |o|
+	o.on("-p PORT", "--port PORT", Integer, 
+		"Accept connections on port PORT (defaults to 10025)") do |port|
+		$port = port
+	end
+
+	o.on("-i IPADDR", "--ip IPADDRESS", String,
+		"Bind to IP address IPADDR (defaults to 0.0.0.0)") do |ip|
+		$ip = ip
+	end
+
+	 o.on_tail("-h", "--help", "Show this message") do
+         puts "A lovely little Ruby implementation of that famous BOFH"
+         puts "script \"chuckmail\".  This is what percolate-mail does"
+         puts "by default, because I'm too frightened to have it actually"
+         puts "deliver mail by default on account of the horror that could"
+         puts "be unleashed at that."
+         puts ""
+         puts "What chuckmail does is: it simulates an open relay.  But it"
+         puts "just discards all messages delivered to it.  Very handy if"
+         puts "you want to catch a spammer in the act."
+         puts ""
+		 puts opts
+		 exit
+	 end
+end
+
+opts.parse(ARGV)
+
+listener = Percolate::Listener.new	:port => $port || 10025, :ipaddr => $ip || '0.0.0.0'
+listener.go
