@@ -170,9 +170,6 @@ class TestPercolateResponder < Test::Unit::TestCase
 	end
 
 	def test_quit
-		assert_raises Percolate::TransactionFinishedException do
-			@responder.command "quit"
-		end
 		assert_equal "221 Pleasure doing business with you", 
 					 @responder.response
 	end
