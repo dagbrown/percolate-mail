@@ -99,7 +99,7 @@ module Percolate
             end
         end
 
-        def handle_resaponse mailsocket, response
+        def handle_response mailsocket, response
             case response 
             when String then
                 mailsocket.write response + CRLF
