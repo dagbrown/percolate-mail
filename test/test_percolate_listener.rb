@@ -71,13 +71,6 @@ class TestPercolateResponder < Test::Unit::TestCase
 		assert_equal "250 #{TestHostName}", @responder.response
 	end
 
-	def test_should_never_get_here
-		test_helo
-		assert_raises Percolate::ResponderError do
-			@responder.__send__ "connect"
-		end
-	end
-
 	def test_ehlo
 		test_initialize
 		@responder.command "ehlo testhelohost"
