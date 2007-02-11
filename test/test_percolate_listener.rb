@@ -106,7 +106,6 @@ class TestPercolateResponder < Test::Unit::TestCase
 		test_mail_from_invalid
 		@responder.command "mail from:<validaddress>"
 		assert_equal "250 ok", @responder.response
-		assert_not_nil @responder.instance_variable_get("@mail_object")
 	end
 
 	def test_rset_after_mail_from
