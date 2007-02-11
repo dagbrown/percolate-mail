@@ -1,9 +1,5 @@
 - Logging
 
-- Complete test coverage
-
-- Received: headers
-
 - Support more ESMTP extensions
   - SIZE
   - 8BIT
