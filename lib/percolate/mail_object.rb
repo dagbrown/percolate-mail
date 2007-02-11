@@ -45,6 +45,7 @@ module Percolate
             @origin_ip     = opts[:origin_ip]
             @heloname      = opts[:heloname]
             @myhostname    = opts[:myhostname]
+            @timestamp     = Time.now
             @smtp_id       = ([nil]*16).map { rand(16).to_s(16) }.join.upcase
         end
 
@@ -57,9 +58,7 @@ module Percolate
         #
         # Also, at the time of creation, the responder doesn't know
         # necessarily who a message is meant for.  Heck, it could be
-        # meant for twenty different people!  Come to that, I'm not sure
-        # I've even tested for that particular eventuality.  (For a
-        # miracle, I actually implemented it, though.)
+        # meant for twenty different people!
         attr_accessor :envelope_from, :envelope_to, :content
 
         # These four are read-only because I hate you.  They're actually
@@ -75,17 +74,21 @@ module Percolate
             # Converts a SMTP::MailObject object into a Gurgitate-Mail
             # MailMessage object.
             def to_gurgitate_mailmessage
+                received = "Received: from #{@heloname} (#{@origin_ip}) " +
+                           "by #{@myhostname} with SMTP ID #{smtp_id} " +
+                           "for <#{@envelope_to}>; #{@timestamp.to_s}\n"
+                message = @content.gsub "\r",""
                 begin
-                    return Gurgitate::Mailmessage.new(@content, @envelope_to,
-                                                      @envelope_from)
+                    g = Gurgitate::Mailmessage.new(received + content, 
+                                                   @envelope_to, @envelope_from)
                 rescue Gurgitate::IllegalHeader
                     # okay, let's MAKE a mail message (the RFC actually
                     # says that this is okay.  It says that after DATA,
                     # an SMTP server should accept pretty well any old
                     # crap.)
-                    message_text = "From: #{@envelope_from}\r\n" +
-                   "To: undisclosed recipients:;\r\n" +
-                   "\r\n" +
+                    message_text = received + "From: #{@envelope_from}\n" +
+                   "To: undisclosed recipients:;\n" +
+                   "\n" +
                    @content
                    return Gurgitate::Mailmessage.new(message_text, @envelope_to,
                                                      @envelope_from)
