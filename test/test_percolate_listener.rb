@@ -50,11 +50,13 @@ class TestPercolateResponder < Test::Unit::TestCase
 	end
 
 	def teardown
-		if @responder
-			@responder.command 'quit'
-			@responder.response
+		begin
+			if @responder
+				@responder.command 'quit'
+				@responder.response
+			end
+		rescue
 		end
-		ensure
 		$stderr.puts "== killing #{@pid}" if $DEBUG
 		Process.kill 'KILL', @pid
 		$stderr.puts "== waiting for #{@pid}" if $DEBUG
@@ -174,6 +176,10 @@ class TestPercolateResponder < Test::Unit::TestCase
 		@responder.command 'quit'
 		assert_equal "221 Pleasure doing business with you", 
 					 @responder.response
+		assert_raises Errno::ECONNRESET do
+			@responder.command 'Booga!'
+		end
+		@responder = nil
 	end
 
 	def test_quit_after_message
