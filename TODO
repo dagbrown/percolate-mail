@@ -3,3 +3,12 @@
 - Complete test coverage
 
 - Received: headers
+
+- Support more ESMTP extensions
+  - SIZE
+  - 8BIT
+
+- TLS?
+
+- Add gurgitate-delivery example script
+
