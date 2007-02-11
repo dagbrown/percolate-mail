@@ -51,18 +51,21 @@ class TestPercolateListener < Test::Unit::TestCase
 
         sleep 0.1
 
+        sock = nil
+
         assert_nothing_raised do
             sock = TCPSocket.new "localhost", 10025
-            assert_nothing_raised do
-                sock.write "\r\n"
-            end
-
-            assert_raises Errno::EAGAIN do
-                assert_equal "Boxcar!\r\n", sock.recv_nonblock(1000)
-            end
-
-            sock.close
         end
+
+        assert_nothing_raised do
+            sock.write "\r\n"
+        end
+
+        assert_raises Errno::EAGAIN do
+            assert_equal "Boxcar!\r\n", sock.recv_nonblock(1000)
+        end
+
+        sock.close
 
         Process.kill 'INT', pid
 
