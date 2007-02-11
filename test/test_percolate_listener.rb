@@ -116,8 +116,6 @@ class TestPercolateResponder < Test::Unit::TestCase
 		assert_nil @smtpd.instance_variable_get("@mail_object")
 		@responder.command "helo testhelohost"
 		assert_equal "250 #{TestHostName}", @responder.response
-		assert_equal "testhelohost", 
-			@responder.instance_variable_get("@remotehostname")
 		@responder.command "mail from:<anotheraddress>"
 		assert_equal "250 ok", @responder.response
 	end
