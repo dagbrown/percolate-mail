@@ -174,7 +174,7 @@ class TestPercolateResponder < Test::Unit::TestCase
 
 	def test_quit
 		@responder.command 'quit'
-		assert_equal "221 Pleasure doing business with you", 
+		assert_match /221 Pleasure doing business with you/, 
 					 @responder.response
 		assert_raises Errno::ECONNRESET do
 			@responder.command 'Booga!'
