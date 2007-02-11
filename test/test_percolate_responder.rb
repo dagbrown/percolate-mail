@@ -291,6 +291,55 @@ class TestSubclassedSMTPResponder < TestPercolateResponder
             @responder.instance_variable_get("@mail_object") .
                 envelope_to
     end
+
+    def test_data_actual_message
+        test_rcpt_to_valid
+        @responder.command "data"
+        assert_equal "354 end data with <cr><lf>.<cr><lf>", 
+            @responder.response
+        @responder.command "From: A Sender <sendera@example.org>"
+        assert_equal nil, @responder.response
+        @responder.command "To: A Receiver <receivera@example.com>"
+        assert_equal nil, @responder.response
+        @responder.command "Subject: You know, stuff"
+        assert_equal nil, @responder.response
+        @responder.command ""
+        assert_equal nil, @responder.response
+        @responder.command "42!"
+        assert_equal nil, @responder.response
+        @responder.command "."
+        assert_match /^250 accepted, SMTP id is [0-9A-F]{16}$/, @responder.response
+    end
+
+    def test_data_bogus_message
+        test_rcpt_to_valid
+        @responder.command "data"
+        assert_equal "354 end data with <cr><lf>.<cr><lf>", 
+            @responder.response
+        @responder.command "Boxcar!"
+        assert_equal nil, @responder.response
+        @responder.command "."
+        assert_match /^250 accepted, SMTP id is [0-9A-F]{16}$/, @responder.response
+    end
+
+    def test_to_gurgitate_mailmessage
+        test_data_actual_message
+        mo = @responder.instance_variable_get("@mail_object")
+        gm = mo.to_gurgitate_mailmessage
+        assert_instance_of Gurgitate::Mailmessage, gm
+        assert gm.headers.match('From', /sendera@example.org/)
+        assert gm.headers.match('To', /receivera@example.com/)
+    end
+
+    def test_to_gurgitate_mailmessage_with_bogus
+        test_data_bogus_message
+        mo = @responder.instance_variable_get("@mail_object")
+        gm = mo.to_gurgitate_mailmessage
+        assert_instance_of Gurgitate::Mailmessage, gm
+        assert gm.headers.match('From', /validaddress/)
+        assert gm.headers.match('To', /undisclosed/)
+        assert_match /Boxcar!/, gm.body
+    end
 end
 
 class TestDebug < TestPercolateResponder
