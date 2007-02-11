@@ -138,17 +138,12 @@ class TestPercolateResponder < Test::Unit::TestCase
 		test_rcpt_to_valid
 		@responder.command "rcpt to:<anothervalidrcptaddress>"
 		assert_equal "250 ok", @responder.response
-		assert_equal [ "validrcptaddress", "anothervalidrcptaddress" ], 
-			@responder.instance_variable_get("@mail_object") .
-				envelope_to
 	end
 
 	def test_rcpt_to_invalid
 		test_mail_from_valid
 		@responder.command "rcpt to: not actually valid"
 		assert_equal "501 bad RCPT TO: parameter", @responder.response
-		assert_nil @responder.instance_variable_get("@mail_object") .
-				envelope_to
 	end
 
 	def test_rcpt_to_at_wrong_time
