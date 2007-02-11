@@ -54,6 +54,7 @@ class TestPercolateResponder < Test::Unit::TestCase
 			@responder.command 'quit'
 			@responder.response
 		end
+		ensure
 		$stderr.puts "== killing #{@pid}" if $DEBUG
 		Process.kill 'KILL', @pid
 		$stderr.puts "== waiting for #{@pid}" if $DEBUG
