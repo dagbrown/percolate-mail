@@ -7,6 +7,8 @@ require "test/unit"
 
 $:.unshift File.join(File.dirname(__FILE__),"..","lib")
 
+$DEBUG = ARGV.include? '-d'
+
 require "percolate-mail"
 
 class SMTPConnection
@@ -18,22 +20,22 @@ class SMTPConnection
 		resp = ""
 		str = @socket.recv(1000)
 		resp << str
-		$stderr.puts "<- #{resp.inspect}"
+		$stderr.puts "<- #{resp.inspect}" if $DEBUG
 		if resp.chomp("\r\n") == resp
-			raise Error, "whoops, we're not doing EOLs properly"
+			raise "whoops, we're not doing EOLs properly"
 		else
 			return resp.chomp("\r\n")
 		end
 	end
 
 	def command str
-		$stderr.puts "-> #{str}"
+		$stderr.puts "-> #{str.inspect}" if $DEBUG
 		@socket.write_nonblock str + "\r\n"
 	end
 end
 
 class TestPercolateResponder < Test::Unit::TestCase
-	TestHostName="localhost"
+	TestHostName="testhelohost"
 
 	def setup
 		@pid = fork do 
@@ -41,17 +43,22 @@ class TestPercolateResponder < Test::Unit::TestCase
 			listener.go
 		end
 
-		sleep 0.1 # to give the listener time to fire up
+		sleep 0.2 # to give the listener time to fire up
 
 		@responder ||= SMTPConnection.new
 		# @responder = Percolate::Responder.new TestHostName, :debug => false
 	end
 
 	def teardown
-		@responder.command 'quit'
-		@responder.response
+		if @responder
+			@responder.command 'quit'
+			@responder.response
+		end
+		$stderr.puts "== killing #{@pid}" if $DEBUG
 		Process.kill 'KILL', @pid
+		$stderr.puts "== waiting for #{@pid}" if $DEBUG
 		Process.waitpid @pid
+		sleep 0.1
 	end
 
 	def test_initialize
@@ -62,8 +69,6 @@ class TestPercolateResponder < Test::Unit::TestCase
 		test_initialize
 		@responder.command "helo testhelohost"
 		assert_equal "250 #{TestHostName}", @responder.response
-		assert_equal "testhelohost", 
-			@responder.instance_variable_get("@remotehostname")
 	end
 
 	def test_should_never_get_here
@@ -77,8 +82,6 @@ class TestPercolateResponder < Test::Unit::TestCase
 		test_initialize
 		@responder.command "ehlo testhelohost"
 		assert_equal "250 #{TestHostName}", @responder.response
-		assert_equal "testhelohost", 
-			@responder.instance_variable_get("@remotehostname")
 	end
 
 	def test_randomcrap
