@@ -32,6 +32,10 @@ class SMTPConnection
 		$stderr.puts "-> #{str.inspect}" if $DEBUG
 		@socket.write_nonblock str + "\r\n"
 	end
+
+	def closed?
+		@socket.eof?
+	end
 end
 
 class TestPercolateResponder < Test::Unit::TestCase
@@ -176,9 +180,7 @@ class TestPercolateResponder < Test::Unit::TestCase
 		@responder.command 'quit'
 		assert_match /221 Pleasure doing business with you/, 
 					 @responder.response
-		assert_raises Errno::ECONNRESET do
-			@responder.command 'Booga!'
-		end
+		assert @responder.closed?
 		@responder = nil
 	end
 
