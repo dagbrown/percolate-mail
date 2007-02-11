@@ -51,51 +51,66 @@ module Percolate
         # Once the listener is running, let it start handling mail by
         # invoking the poorly-named "go" method.
         def go
-            trap 'CLD' do reap_children end
-            trap 'INT' do shutdown end
+            trap 'CLD' do 
+                debug "Got SIGCHLD"
+                reap_children 
+            end
+            trap 'INT' do 
+                debug "Got SIGINT"
+                cleanup_and_exit 
+            end
             
             @pids = []
             while mailsocket=@socket.accept
-                pid = fork do # I can't imagine the contortions required
-                              # in Win32 to get "fork" to work, but hey,
-                              # maybe someone did so anyway.
-                    responder = @responder.new hostname, 
-                        :originating_ip => mailsocket.peeraddr[3]
-                    begin
-                        while true
-                            response = responder.response
-                            case response 
-                                when String then
-                                    mailsocket.puts response + CRLF
-                                when Array then
-                                    response.each do |str|
-                                        mailsocket.puts str + CRLF
-                                    end
-                                when NilClass then
-                                    nil # server has nothing to say
-                            end
-                            cmd = mailsocket.readline
-                            cmd.chomp! CRLF
-                            responder.command cmd
-                        end
-                    rescue TransactionFinishedException
-                        mailsocket.puts responder.response + CRLF
-                        mailsocket.close
-                        exit!
-                    rescue
-                        mailsocket.puts "421 Server confused, shutting down" +
-                            CRLF
-                        mailsocket.close
-                        exit!
-                    end
-                end
-
+                debug "Got connection from #{mailsocket.peeraddr[3]}"
+                pid = handle_connection mailsocket
                 mailsocket.close
                 @pids << pid
             end
         end
 
         private
+
+        def handle_connection mailsocket
+            fork do # I can't imagine the contortions required
+                          # in Win32 to get "fork" to work, but hey,
+                          # maybe someone did so anyway.
+                responder = @responder.new hostname, 
+                    :originating_ip => mailsocket.peeraddr[3]
+                begin
+                    while true
+                        response = responder.response
+                        handle_response mailsocket, response
+
+                        cmd = mailsocket.readline
+                        cmd.chomp! CRLF
+                        responder.command cmd
+                    end
+                rescue TransactionFinishedException
+                    mailsocket.puts responder.response + CRLF
+                    mailsocket.close
+                    exit!
+                rescue
+                    mailsocket.puts "421 Server confused, shutting down" +
+                        CRLF
+                    mailsocket.close
+                    exit!
+                end
+            end
+        end
+
+        def handle_resaponse mailsocket, response
+            case response 
+            when String then
+                mailsocket.write response + CRLF
+            when Array then
+                response.each do |str|
+                    mailsocket.write str + CRLF
+                end
+            when NilClass then
+                nil # server has nothing to say
+            end
+        end
 
         # Prevent a BRAAAAAAINS situation
         def reap_children
@@ -108,17 +123,17 @@ module Percolate
             end
         end
 
-        def shutdown
+        def cleanup_and_exit
+            debug "Shutting down"
             @socket.close
             exit
         end
-
 
         def debug debug_string
             @debugging_stream ||= []
             @debugging_stream << debug_string
             if @verbose_debug
-                puts debug_string
+                $stderr.puts debug_string
             end
         end
     end
