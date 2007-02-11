@@ -322,24 +322,27 @@ class TestSubclassedSMTPResponder < TestPercolateResponder
         assert_match /^250 accepted, SMTP id is [0-9A-F]{16}$/, @responder.response
     end
 
-    def test_to_gurgitate_mailmessage
-        test_data_actual_message
-        mo = @responder.instance_variable_get("@mail_object")
-        gm = mo.to_gurgitate_mailmessage
-        assert_instance_of Gurgitate::Mailmessage, gm
-        assert gm.headers.match('From', /sendera@example.org/)
-        assert gm.headers.match('To', /receivera@example.com/)
-    end
+    if $LOADED_FEATURES.include? "gurgitate/mailmessage.rb"
 
-    def test_to_gurgitate_mailmessage_with_bogus
-        test_data_bogus_message
-        mo = @responder.instance_variable_get("@mail_object")
-        gm = mo.to_gurgitate_mailmessage
-        assert_instance_of Gurgitate::Mailmessage, gm
-        assert gm.headers.match('From', /validaddress/)
-        assert gm.headers.match('To', /undisclosed/)
-        assert_match /Boxcar!/, gm.body
-    end
+      def test_to_gurgitate_mailmessage
+          test_data_actual_message
+          mo = @responder.instance_variable_get("@mail_object")
+          gm = mo.to_gurgitate_mailmessage
+          assert_instance_of Gurgitate::Mailmessage, gm
+          assert gm.headers.match('From', /sendera@example.org/)
+          assert gm.headers.match('To', /receivera@example.com/)
+      end
+
+      def test_to_gurgitate_mailmessage_with_bogus
+          test_data_bogus_message
+          mo = @responder.instance_variable_get("@mail_object")
+          gm = mo.to_gurgitate_mailmessage
+          assert_instance_of Gurgitate::Mailmessage, gm
+          assert gm.headers.match('From', /validaddress/)
+          assert gm.headers.match('To', /undisclosed/)
+          assert_match /Boxcar!/, gm.body
+      end
+   end
 end
 
 class TestDebug < TestPercolateResponder
