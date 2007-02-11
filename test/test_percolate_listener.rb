@@ -203,7 +203,7 @@ class TestPercolateResponder < Test::Unit::TestCase
 		@responder.command "This is a test"
 		@responder.command "Line 2 of the test"
 		@responder.command "."
-		assert_equal "250 ok", @responder.response
+		assert_match /250 accepted, SMTP id is [A-Z0-9]+/, @responder.response
 	end
 
 	def test_long_complete_transaction
