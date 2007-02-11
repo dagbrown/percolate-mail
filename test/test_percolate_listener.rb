@@ -196,19 +196,13 @@ class TestPercolateResponder < Test::Unit::TestCase
 		test_data
 		@responder.command "mail from:<validaddress>"
 		assert_equal "250 ok", @responder.response
-		assert_not_nil @responder.instance_variable_get("@mail_object")
 		@responder.command "rcpt to:<validrcptaddress>"
 		assert_equal "250 ok", @responder.response
-		assert_equal [ "validrcptaddress" ], 
-			@responder.instance_variable_get("@mail_object") .
-				envelope_to
 		@responder.command "data"
 		assert_equal "354 end data with <cr><lf>.<cr><lf>", 
 			@responder.response
 		@responder.command "This is a test"
-		assert_equal nil, @responder.response
 		@responder.command "Line 2 of the test"
-		assert_equal nil, @responder.response
 		@responder.command "."
 		assert_equal "250 ok", @responder.response
 	end
