@@ -124,9 +124,6 @@ class TestPercolateResponder < Test::Unit::TestCase
 		test_mail_from_valid
 		@responder.command "rcpt to:<validrcptaddress>"
 		assert_equal "250 ok", @responder.response
-		assert_equal [ "validrcptaddress" ], 
-			@responder.instance_variable_get("@mail_object") .
-				envelope_to
 	end
 
 	def test_crappy_transaction_bad_from_good_to
@@ -166,9 +163,7 @@ class TestPercolateResponder < Test::Unit::TestCase
 		assert_equal "354 end data with <cr><lf>.<cr><lf>", 
 			@responder.response
 		@responder.command "This is a test"
-		assert_equal nil, @responder.response
 		@responder.command "Line 2 of the test"
-		assert_equal nil, @responder.response
 		@responder.command "."
 		assert_equal "250 ok", @responder.response
 	end
