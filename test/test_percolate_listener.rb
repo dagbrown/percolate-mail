@@ -170,6 +170,7 @@ class TestPercolateResponder < Test::Unit::TestCase
 	end
 
 	def test_quit
+		@responder.command 'quit'
 		assert_equal "221 Pleasure doing business with you", 
 					 @responder.response
 	end
