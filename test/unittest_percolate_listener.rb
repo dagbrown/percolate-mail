@@ -43,10 +43,9 @@ class TestPercolateListener < Test::Unit::TestCase
     TestHostName="localhost"
 
     def test_startup_and_shutdown
-        listener = Percolate::Listener.new :hostname => TestHostName,
-            :responder => ::Responder, :port => 10025
-
         pid = fork do
+            listener = Percolate::Listener.new :hostname => TestHostName,
+                :responder => ::Responder, :port => 10025
             listener.go
         end
 
@@ -69,6 +68,7 @@ class TestPercolateListener < Test::Unit::TestCase
         sock.close
 
         Process.kill 'INT', pid
+        assert_equal pid, Process.wait
 
         sleep 0.1
 
