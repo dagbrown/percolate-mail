@@ -70,8 +70,6 @@ class TestPercolateListener < Test::Unit::TestCase
         Process.kill 'INT', pid
         assert_equal pid, Process.wait
 
-        sleep 0.1
-
         assert_raises Errno::ECONNREFUSED do
             TCPSocket.new "localhost", 10025
         end
