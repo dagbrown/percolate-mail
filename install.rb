@@ -1,48 +1,38 @@
 #!/usr/bin/ruby -w
 
 require "rbconfig"
+require "fileutils"
 require "ftools"
 
 module Percolate
     Package = "percolate-mail"
 
     class Install
-        def self.mkdir(d)
-            print "Creating #{d}..."
-            begin
-                Dir.mkdir(d)
-                print "\n"
-            rescue Errno::EEXIST
-                if FileTest.directory? d
-                    puts "no need, it's already there."
-                else
-                    puts "there's something else there already."
-                    raise
-                end
-            rescue Errno::ENOENT
-                puts "its parent doesn't exist!"
-                raise
-            end
-        end
-
-        def self.install(prefix=nil)
+        def self.install(prefix=nil, opts = {})
             include Config
 
+            if opts[:destdir]
+                destdir = opts[:destdir]
+            else
+                destdir = '/'
+            end
+
             if prefix then
-                dest   = File.join prefix, "lib"
-                mkdir dest
+                dest   = File.join destdir, prefix, "lib"
             else
                 version = CONFIG["MAJOR"] + "." + CONFIG["MINOR"]
                 sitedir = CONFIG["sitedir"]
-                dest    = File.join(sitedir,version)
+                dest    = File.join(destdir,sitedir,version)
             end
+
+            FileUtils.mkdir_p dest
 
             destper = File.join(dest,"percolate")
 
             print "Installing #{Package}.rb in #{dest}...\n"
             File.install(File.join("lib","#{Package}.rb"), dest, 0644)
             
-            mkdir destper
+            FileUtils.mkdir_p destper
             Dir.glob(File.join("lib","percolate","*.rb")).each { |f|
                 puts "Installing #{f} in #{destper}..."
                 File.install(f,destper)
@@ -52,5 +42,13 @@ module Percolate
 end
 
 if __FILE__ == $0 then
-    Percolate::Install.install()
+    $destdir = nil
+    require 'optparse'
+    opts = OptionParser.new do |o|
+        o.on("--destdir DESTDIR", String, "Install into DESTDIR") do |p|
+            $destdir = p
+        end
+    end
+    opts.parse(ARGV)
+    Percolate::Install.install(nil, :destdir => $destdir)
 end
