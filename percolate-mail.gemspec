@@ -12,7 +12,7 @@ spec = Gem::Specification.new do |s|
     # s.description = "FIXME"
     s.has_rdoc = true
 
-    s.files = Dir['lib/**/*'] + Dir['test/**/*']
+    s.files = Dir['lib/**/*'] + Dir['test/**/*'] + Dir['examples/**/*']
     
     s.require_path = 'lib'
     s.author = "Dave Brown"
