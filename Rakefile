@@ -9,7 +9,9 @@ Gemfile = "#{Package}-#{Version}.gem"
 Gemspec = "#{Package}.gemspec"
 Tarball = "#{Package}-#{Version}.tar.gz"
 
-Files = [ "install.rb", "INSTALL" ] + Dir["lib/**/*.rb"]
+Files = [ "install.rb", "INSTALL" ] + 
+        Dir["lib/**/*.rb"] + 
+        Dir["examples/**/*.rb"]
 
 task :dist => [ :test, :tarball, :gem ]
 
