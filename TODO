@@ -8,4 +8,6 @@
 
 - Add gurgitate-delivery example script
 
+- Add an example script that doesn't turn you into an open relay
+
 - Hooks for SMTP-AUTH
