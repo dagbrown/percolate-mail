@@ -5,13 +5,14 @@ $:.unshift File.join(File.dirname(__FILE__),"..","lib")
 require "percolate/responder"
 
 class MyResponder < Percolate::Responder
-    attr_writer :sender_validation, :recipient_validation
+    attr_writer :sender_validation, :recipient_validation, :message_validation
 
     Responses = { false => "no", true => "ok" }
 
     def initialize(hostname,opts={})
         @sender_validation = true
         @recipient_validation = true
+        @message_validation = true
         super(hostname, opts)
     end
 
@@ -21,6 +22,14 @@ class MyResponder < Percolate::Responder
 
     def validate_recipient addr
         return @recipient_validation, Responses[@recipient_validation]
+    end
+
+    def process_message addr
+        if @message_validation
+            return true
+        else
+            return false
+        end
     end
 end
 
