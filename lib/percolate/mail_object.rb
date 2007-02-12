@@ -95,6 +95,32 @@ module Percolate
                                                      @envelope_from)
                 end
             end
+
+            # Lets you process a message with Gurgitate-Mail.  The
+            # gurgitate-rules segment is given in the block.
+            def gurgitate &block
+                received = "Received: from #{@heloname} (#{@origin_ip}) " +
+                           "by #{@myhostname} with SMTP ID #{smtp_id} " +
+                           "for <#{@envelope_to}>; #{@timestamp.to_s}\n"
+                message = @content.gsub "\r",""
+                begin
+                    Gurgitate::Gurgitate.new(message_text, @envelope_to,
+                                             @envelope_from).process &block
+                rescue Gurgitate::IllegalHeader
+                    # okay, let's MAKE a mail message (the RFC actually
+                    # says that this is okay.  It says that after DATA,
+                    # an SMTP server should accept pretty well any old
+                    # crap.)
+                    message_text = received + "From: #{@envelope_from}\n" +
+                               "To: undisclosed recipients:;\n" +
+                               "X-Gurgitate-Error: #{$!}\n" +
+                               "\n" +
+                               @content
+                    Gurgitate::Gurgitate.new(message_text, @envelope_to,
+                                             @envelope_from).process &block
+                end
+            end
+
         rescue LoadError => e
             nil # and don't define to_gurgitate_mailmessage.  I'm a huge
                 # egotist so I'm not including an rmail variant
