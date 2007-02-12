@@ -25,11 +25,7 @@ class MyResponder < Percolate::Responder
     end
 
     def process_message addr
-        if @message_validation
-            return true
-        else
-            return false
-        end
+        return @message_validation
     end
 end
 
