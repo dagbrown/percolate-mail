@@ -109,7 +109,7 @@ module Percolate
         # This method takes one argument:
         # +address+::       The email address you're validating
         def validate_sender address
-            return true, "ok"
+            return true
         end
 
         # Override this if you care about the recipient (which you
@@ -117,7 +117,7 @@ module Percolate
         # will work to return the sender, so that you can deal with both
         # recipient and sender here.
         def validate_recipient address
-            return true, "ok"
+            return true
         end
 
         # The current message's sender, if the MAIL FROM: command has
@@ -279,14 +279,14 @@ module Percolate
 
             validated, message = validate_sender mail_from
             unless validated
-                raise ResponderError, "551 #{message}"
+                raise ResponderError, "551 #{message || 'no'}"
             end
 
             @mail_object = MailObject.new(:envelope_from => mail_from,
                                           :heloname => @heloname,
                                           :origin_ip => @originating_ip,
                                           :myhostname => @mailhostname)
-            respond "250 #{message}"
+            respond "250 #{message || 'ok'}"
         end
 
         def rcpt recipient
@@ -302,10 +302,10 @@ module Percolate
 
             validated, message = validate_recipient rcpt_to
             unless validated
-                raise ResponderError, "551 #{message}"
+                raise ResponderError, "551 #{message || 'no'}"
             end
             @mail_object.envelope_to << rcpt_to
-            respond "250 #{message}"
+            respond "250 #{message || 'ok'}"
         end
 
         def data
