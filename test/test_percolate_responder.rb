@@ -349,7 +349,7 @@ class TestSubclassedSMTPResponder < TestPercolateResponder
           assert_instance_of Gurgitate::Mailmessage, gm
           assert gm.headers.match('From', /validaddress/)
           assert gm.headers.match('To', /undisclosed/)
-          assert_match /Boxcar!/, gm.body
+          assert_match(/Boxcar!/, gm.body)
       end
    end
 end
