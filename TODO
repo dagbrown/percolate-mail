@@ -1,12 +1,22 @@
 - Logging
 
+- Complete test coverage
+  - done, if it weren't for the fact I keep ADDING FEATURES like the insane
+    fool I am
+
+- Received: headers
+  - done!  Although I should go back and read the RFC again to make sure I'm
+    getting that right.
+
 - Support more ESMTP extensions
   - SIZE
   - 8BIT
+  - VRFY (because we *can*)
 
 - TLS?
 
 - Add gurgitate-delivery example script
+  - and by that I mean "add proper gurgitate-mail support"
 
 - Add an example script that doesn't turn you into an open relay
 
