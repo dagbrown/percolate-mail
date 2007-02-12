@@ -1,6 +1,6 @@
 require 'rake/gempackagetask'
 
-PKG_VERSION = "1.0.0"
+PKG_VERSION = File.read(File.join(File.dirname(__FILE__), "VERSION")).chomp
 PKG_NAME = "percolate-mail"
 PKG_FILE_NAME = "#{PKG_NAME}-#{PKG_VERSION}"
 
