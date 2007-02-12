@@ -24,10 +24,48 @@ class MyResponder < Percolate::Responder
         return @recipient_validation, Responses[@recipient_validation]
     end
 
+    def process_message message
+        return @message_validation
+    end
+end
+
+
+if $LOADED_FEATURES.include? "gurgitate/mailmessage.rb"
+    class GurgitatedResponder < MyResponder
+        def process_message message
+            message.gurgitate do
+                true
+            end
+            return @message_validation
+        end
+    end
+end
+
+class MyResponder < Percolate::Responder
+    attr_writer :sender_validation, :recipient_validation, :message_validation
+
+    Responses = { false => "no", true => "ok" }
+
+    def initialize(hostname,opts={})
+        @sender_validation = true
+        @recipient_validation = true
+        @message_validation = true
+        super(hostname, opts)
+    end
+
+    def validate_sender addr
+        return @sender_validation, Responses[@sender_validation]
+    end
+
+    def validate_recipient addr
+        return @recipient_validation, Responses[@recipient_validation]
+    end
+
     def process_message addr
         return @message_validation
     end
 end
+
 
 class TestPercolateResponder < Test::Unit::TestCase
     TestHostName="testhost"
@@ -384,6 +422,14 @@ class TestSubclassedSMTPResponder < TestPercolateResponder
           assert_match(/Boxcar!/, gm.body)
       end
    end
+end
+
+if $LOADED_FEATURES.include? "gurgitate/mailmessage.rb"
+    class TestSubclassedSMTPResponder < TestPercolateResponder
+        def setup
+            @responder = GurgitatedResponder.new TestHostName, :debug => false
+        end
+    end
 end
 
 class TestDebug < TestPercolateResponder
