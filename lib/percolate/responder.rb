@@ -87,7 +87,7 @@ module Percolate
         #                         the RFC says, be any old crap at all!  Don't
         #                         even expect an RFC2822-formatted message)
         def process_message message_object
-            return true, "accepted, SMTP id is #{@mail_object.smtp_id}"
+            return true
         end
 
         # Override this if you care about who the sender is (you
@@ -339,7 +339,14 @@ module Percolate
                 result, text = process_message @mail_object
                 if result or
                     ( String === result and text.nil? )
-                    @response = "250 #{text || result}"
+                    if String === result and text.nil?
+                        @response = "250 #{result}"
+                    elsif result == true and text.nil?
+                        @response = "250 accepted, SMTP id is " + 
+                            @mail_object.smtp_id
+                    elsif result == true and text
+                        @response = "250 #{text}"
+                    end
                 else
                     @response = "550 #{text || 'Email rejected, sorry'}"
                 end
