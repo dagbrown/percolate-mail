@@ -69,7 +69,7 @@ module Percolate
         attr_reader :smtp_id, :heloname, :origin_ip, :myhostname
         
         begin
-            require "gurgitate/mailmessage"
+            require "gurgitate-mail"
 
             # Converts a SMTP::MailObject object into a Gurgitate-Mail
             # MailMessage object.
@@ -87,10 +87,9 @@ module Percolate
                     # an SMTP server should accept pretty well any old
                     # crap.)
                     message_text = received + "From: #{@envelope_from}\n" +
-                   "To: undisclosed recipients:;\n" +
-                   "X-Gurgitate-Error: #{$!}\n" +
-                   "\n" +
-                   @content
+                                       "To: undisclosed recipients:;\n" +
+                                       "X-Gurgitate-Error: #{$!}\n" +
+                                       "\n" + @content
                    return Gurgitate::Mailmessage.new(message_text, @envelope_to,
                                                      @envelope_from)
                 end
@@ -104,7 +103,7 @@ module Percolate
                            "for <#{@envelope_to}>; #{@timestamp.to_s}\n"
                 message = @content.gsub "\r",""
                 begin
-                    Gurgitate::Gurgitate.new(message_text, @envelope_to,
+                    Gurgitate::Gurgitate.new(received + message, @envelope_to,
                                              @envelope_from).process &block
                 rescue Gurgitate::IllegalHeader
                     # okay, let's MAKE a mail message (the RFC actually
@@ -114,8 +113,7 @@ module Percolate
                     message_text = received + "From: #{@envelope_from}\n" +
                                "To: undisclosed recipients:;\n" +
                                "X-Gurgitate-Error: #{$!}\n" +
-                               "\n" +
-                               @content
+                               "\n" + @content
                     Gurgitate::Gurgitate.new(message_text, @envelope_to,
                                              @envelope_from).process &block
                 end
