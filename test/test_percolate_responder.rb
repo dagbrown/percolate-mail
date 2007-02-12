@@ -339,6 +339,19 @@ class TestSubclassedSMTPResponder < TestPercolateResponder
         assert_match /^550/, @responder.response
     end
 
+    def test_data_approved_custom_response
+        test_rcpt_to_valid
+        @responder.message_validation = [ true, "honk" ]
+        @responder.command "data"
+        assert_equal "354 end data with <cr><lf>.<cr><lf>", 
+            @responder.response
+        @responder.command "Boxcar!"
+        assert_equal nil, @responder.response
+        @responder.command "."
+        assert_match /^250 honk/, @responder.response
+    end
+        
+
     if $LOADED_FEATURES.include? "gurgitate/mailmessage.rb"
 
       def test_to_gurgitate_mailmessage
