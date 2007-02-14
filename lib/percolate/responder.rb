@@ -171,7 +171,7 @@ module Percolate
             /^data$/i               => :data,
             /^\.$/                  => :endmessage,
             /^rset$/i               => :rset,
-            /^quit$/                => :quit
+            /^quit$/i               => :quit
         }
 
         StateTable = {
