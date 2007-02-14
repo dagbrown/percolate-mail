@@ -29,7 +29,6 @@ class MyResponder < Percolate::Responder
     end
 end
 
-
 if $LOADED_FEATURES.include? "gurgitate/mailmessage.rb"
     class GurgitatedResponder < MyResponder
         def process_message message
@@ -38,31 +37,6 @@ if $LOADED_FEATURES.include? "gurgitate/mailmessage.rb"
             end
             return @message_validation
         end
-    end
-end
-
-class MyResponder < Percolate::Responder
-    attr_writer :sender_validation, :recipient_validation, :message_validation
-
-    Responses = { false => "no", true => "ok" }
-
-    def initialize(hostname,opts={})
-        @sender_validation = true
-        @recipient_validation = true
-        @message_validation = true
-        super(hostname, opts)
-    end
-
-    def validate_sender addr
-        return @sender_validation, Responses[@sender_validation]
-    end
-
-    def validate_recipient addr
-        return @recipient_validation, Responses[@recipient_validation]
-    end
-
-    def process_message addr
-        return @message_validation
     end
 end
 
@@ -283,6 +257,21 @@ class TestPercolateResponder < Test::Unit::TestCase
         quit
     end
 end
+
+
+#and let's do this all again in uppercase
+class UPPERCASERESPONDER < Percolate::Responder
+    def command cmdtext
+        super(cmdtext.sub /^w+/ do |word| word.upcase end)
+    end
+end
+
+class TestUPPERCASEResponder < TestPercolateResponder
+    def setup
+        @responder = UPPERCASERESPONDER.new TestHostName, :debug => false
+    end
+end
+
 
 class TestSubclassedSMTPResponder < TestPercolateResponder
     def setup
