@@ -34,9 +34,7 @@ module Percolate
     # There is a small amount of Rubyish magic but that's there mainly
     # because I'm lazy.  And besides, if I weren't lazy, some guys on
     # IRC would flame me.  Haha!  I kid.  Greetz to RubyPanther by the
-    # wya.  Even though I know you've never contributed anything and
-    # never will, at least you can live with the satisfaction that you
-    # don't have to deal with my evil racist ass any more.
+    # way.
     class Responder
 
         # Sets up the new smtp responder, with the parameter "mailhostname"

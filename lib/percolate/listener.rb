@@ -90,10 +90,13 @@ module Percolate
                     mailsocket.puts responder.response + CRLF
                     mailsocket.close
                     exit!
-                rescue
-                    mailsocket.puts "421 Server confused, shutting down" +
+                rescue Exception => e
+                    mailsocket.print e.exception + CRLF
+                    mailsocket.print "From " + e.traceback.join(CRLF + "from ") + CRLF
+                    mailsocket.print "421 Server confused, shutting down" +
                         CRLF
                     mailsocket.close
+                    # $stderr.puts e.exception
                     exit!
                 end
             end
