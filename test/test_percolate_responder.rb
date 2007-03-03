@@ -262,7 +262,7 @@ end
 #and let's do this all again in uppercase
 class UPPERCASERESPONDER < Percolate::Responder
     def command cmdtext
-        super(cmdtext.sub /^w+/ do |word| word.upcase end)
+        super(cmdtext.sub(/^w+/) do |word| word.upcase end)
     end
 end
 
