@@ -34,7 +34,7 @@ module Percolate
             @ipaddress = "0.0.0.0"
             @hostname = "localhost"
             @port = 10025
-            @responder = Responder
+            @responder = SMTP::Responder
 
             @verbose_debug = opts[:debug]
             @ipaddress     = opts[:ipaddr] if opts[:ipaddr]

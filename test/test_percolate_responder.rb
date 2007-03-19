@@ -4,7 +4,7 @@ $:.unshift File.join(File.dirname(__FILE__),"..","lib")
 
 require "percolate/responder"
 
-class MyResponder < Percolate::Responder
+class MyResponder < Percolate::SMTP::Responder
     attr_writer :sender_validation, :recipient_validation, :message_validation
 
     Responses = { false => "no", true => "ok" }
@@ -45,7 +45,7 @@ class TestPercolateResponder < Test::Unit::TestCase
     TestHostName="testhost"
 
     def setup
-        @responder = Percolate::Responder.new TestHostName, :debug => false
+        @responder = Percolate::SMTP::Responder.new TestHostName, :debug => false
     end
 
     def test_initialize
@@ -260,7 +260,7 @@ end
 
 
 #and let's do this all again in uppercase
-class UPPERCASERESPONDER < Percolate::Responder
+class UPPERCASERESPONDER < Percolate::SMTP::Responder
     def command cmdtext
         super(cmdtext.sub(/^w+/) do |word| word.upcase end)
     end
@@ -425,7 +425,7 @@ class TestDebug < TestPercolateResponder
     def setup
         @old_stderr = $stderr
         $stderr = File.open("/dev/null","w")
-        @responder = Percolate::Responder.new TestHostName, :debug => true
+        @responder = Percolate::SMTP::Responder.new TestHostName, :debug => true
     end
     
     def teardown

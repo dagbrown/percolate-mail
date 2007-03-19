@@ -31,7 +31,8 @@
 module Percolate
 
     # The SMTP::MailObject is mostly a class.  It's what is produced by the
-    # Percolate::Responder class as a result of a complete SMTP transaction.
+    # Percolate::SMTP::Responder class as a result of a complete SMTP
+    # transaction.
     class MailObject
 
         # The constructor.  It takes a whole bunch of optional

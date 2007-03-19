@@ -50,7 +50,7 @@ class TestPercolateResponder < Test::Unit::TestCase
 		sleep 0.2 # to give the listener time to fire up
 
 		@responder ||= SMTPConnection.new
-		# @responder = Percolate::Responder.new TestHostName, :debug => false
+		# @responder = Percolate::SMTP::Responder.new TestHostName, :debug => false
 	end
 
 	def teardown
