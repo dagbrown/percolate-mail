@@ -1,4 +1,4 @@
-require "percolate/responder"
+require "percolate/smtp/responder"
 require "socket"
 
 module Percolate

@@ -2,7 +2,7 @@ require "test/unit"
 
 $:.unshift File.join(File.dirname(__FILE__),"..","lib")
 
-require "percolate/responder"
+require "percolate/smtp/responder"
 
 class MyResponder < Percolate::SMTP::Responder
     attr_writer :sender_validation, :recipient_validation, :message_validation
