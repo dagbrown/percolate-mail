@@ -37,6 +37,13 @@ module Percolate
                 puts "Installing #{f} in #{destper}..."
                 File.install(f,destper)
             }
+
+            FileUtils.mkdir_p File.join(destper, "smtp");
+            Dir.glob(File.join("lib", "percolate", "smtp", "*.rb")).each do |f|
+                puts "Installing #{f} in #{destper}/smtp..."
+                File.install(f,File.join(destper,"smtp"))
+            end
+
         end
     end
 end
