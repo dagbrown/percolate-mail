@@ -31,16 +31,11 @@ module Percolate
         #                    Postfix or Sendmail or your real MTA of
         #                    choice filter through it.
         def initialize(opts = {})
-            @ipaddress = "0.0.0.0"
-            @hostname = "localhost"
-            @port = 10025
-            @responder = SMTP::Responder
-
-            @verbose_debug = opts[:debug]
-            @ipaddress     = opts[:ipaddr] if opts[:ipaddr]
-            @port          = opts[:port] if opts[:port]
-            @hostname      = opts[:hostname] if opts[:hostname]
-            @responder     = opts[:responder] if opts[:responder]
+            @verbose_debug = opts[:debug]     || false
+            @ipaddress     = opts[:ipaddr]    || "0.0.0.0"
+            @port          = opts[:port]      || 10025
+            @hostname      = opts[:hostname]  || "localhost"
+            @responder     = opts[:responder] || SMTP::Responder
 
             @socket = TCPServer.new @ipaddress, @port
         end
@@ -73,8 +68,8 @@ module Percolate
 
         def handle_connection mailsocket
             fork do # I can't imagine the contortions required
-                          # in Win32 to get "fork" to work, but hey,
-                          # maybe someone did so anyway.
+                    # in Win32 to get "fork" to work, but hey,
+                    # maybe someone did so anyway.
                 responder = @responder.new hostname, 
                     :originating_ip => mailsocket.peeraddr[3]
                 begin
@@ -87,7 +82,7 @@ module Percolate
                         responder.command cmd
                     end
                 rescue TransactionFinishedException
-                    mailsocket.puts responder.response + CRLF
+                    mailsocket.print responder.response + CRLF
                     mailsocket.close
                     exit!
                 rescue Exception => e
@@ -96,7 +91,6 @@ module Percolate
                     mailsocket.print "421 Server confused, shutting down" +
                         CRLF
                     mailsocket.close
-                    # $stderr.puts e.exception
                     exit!
                 end
             end
