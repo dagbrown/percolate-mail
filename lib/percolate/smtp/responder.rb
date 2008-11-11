@@ -59,7 +59,7 @@ module Percolate
             #                         the RFC says, be any old crap at all!  Don't
             #                         even expect an RFC2822-formatted message)
             def process_message message_object
-                yield message_object if block_given?
+                yield :data, message_object if block_given?
                 return true
             end
 
@@ -241,7 +241,7 @@ module Percolate
                 respond "250 #{@mailhostname}"
             end
 
-            def mail sender
+            def mail sender, &block
                 validate_state :smtp_mail_started
                 matchdata=sender.match(/^From:\<(.*)\>$/i);
                 unless matchdata
@@ -251,6 +251,7 @@ module Percolate
                 mail_from = matchdata[1]
 
                 validated, message = validate_sender mail_from
+
                 unless validated
                     raise ResponderError, "551 #{message || 'no'}"
                 end
@@ -259,10 +260,13 @@ module Percolate
                                               :heloname => @heloname,
                                               :origin_ip => @originating_ip,
                                               :myhostname => @mailhostname)
+
+                yield :mail, @mail_object if block_given?
+
                 respond "250 #{message || 'ok'}"
             end
 
-            def rcpt recipient
+            def rcpt recipient, &block
                 validate_state :smtp_rcpt_received
                 matchdata=recipient.match(/^To:\<(.*)\>$/i);
                 unless matchdata
@@ -274,15 +278,20 @@ module Percolate
                 @mail_object.envelope_to ||= []
 
                 validated, message = validate_recipient rcpt_to
+
                 unless validated
                     raise ResponderError, "551 #{message || 'no'}"
                 end
+
+                yield :mail, @mail_object if block_given?
+
                 @mail_object.envelope_to << rcpt_to
                 respond "250 #{message || 'ok'}"
             end
 
             def data
                 validate_state :data
+
                 @mail_object.content ||= ""
                 respond "354 end data with <cr><lf>.<cr><lf>"
             end
