@@ -59,6 +59,7 @@ module Percolate
             #                         the RFC says, be any old crap at all!  Don't
             #                         even expect an RFC2822-formatted message)
             def process_message message_object
+                yield message_object if block_given?
                 return true
             end
 
@@ -305,10 +306,10 @@ module Percolate
 
             # The special-case code for message data, which unlike other
             # data, is delivered as lots and lots of lines with a sentinel.
-            def handle_message_data message_line
+            def handle_message_data message_line, &block
                 if message_line == "."
                     @current_state = :message_received
-                    result, text = process_message @mail_object
+                    result, text = process_message @mail_object, &block
                     if result or
                         ( String === result and text.nil? )
                         if String === result and text.nil?

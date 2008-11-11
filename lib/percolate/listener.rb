@@ -45,7 +45,7 @@ module Percolate
 
         # Once the listener is running, let it start handling mail by
         # invoking the poorly-named "go" method.
-        def go
+        def go &block
             trap 'CLD' do 
                 debug "Got SIGCHLD"
                 reap_children 
@@ -58,7 +58,9 @@ module Percolate
             @pids = []
             while mailsocket=@socket.accept
                 debug "Got connection from #{mailsocket.peeraddr[3]}"
-                pid = handle_connection mailsocket
+
+                pid = handle_connection mailsocket, &block
+
                 mailsocket.close
                 @pids << pid
             end
@@ -66,7 +68,7 @@ module Percolate
 
         private
 
-        def handle_connection mailsocket
+        def handle_connection mailsocket, &block
             fork do # I can't imagine the contortions required
                     # in Win32 to get "fork" to work, but hey,
                     # maybe someone did so anyway.
@@ -79,7 +81,7 @@ module Percolate
 
                         cmd = mailsocket.readline
                         cmd.chomp! CRLF
-                        responder.command cmd
+                        responder.command cmd, &block
                     end
                 rescue TransactionFinishedException
                     mailsocket.print responder.response + CRLF
